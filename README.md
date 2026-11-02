@@ -1,46 +1,47 @@
 # ytmp3-scrapper
 
-Cari lagu di YouTube, ubah jadi MP3, putar preview di browser, lalu download — semuanya dari
-satu halaman. Dibangun dengan Django + React, memakai `yt-dlp` dan `ffmpeg`, serta PostgreSQL
-untuk menyimpan koleksi.
+Search for a song on YouTube, convert it to MP3, preview it in the browser, and download it —
+all from a single page. Built with Django + React, powered by `yt-dlp` and `ffmpeg`, with
+PostgreSQL for storing your collection.
 
-> Proyek ini untuk pemakaian pribadi/lokal. Gunakan hanya untuk konten yang kamu berhak
-> mengunduhnya dan hormati hak cipta serta Ketentuan Layanan YouTube.
+> This project is intended for personal/local use. Only download content you have the right to
+> access, and respect copyright as well as YouTube's Terms of Service.
 
 ---
 
-## Fitur
+## Features
 
-- **Cari tanpa API key** — memakai `yt-dlp "ytsearch5:<query>"`, bisa juga menempel URL YouTube.
-- **Maksimal 5 hasil** — judul, channel, durasi, jumlah view, dan thumbnail.
-- **Convert ke MP3** — kualitas VBR tertinggi (`--audio-quality 0`) + metadata ID3.
-- **Antrian 2 worker** — maksimal 2 konversi berjalan bersamaan, sisanya menunggu.
-- **Progress realtime** — `queued → downloading → converting → ready` (atau `error`).
-- **Batalkan konversi** — proses `yt-dlp`/`ffmpeg` dihentikan, file setengah jadi dibersihkan.
-- **Preview streaming** — mendukung HTTP Range, jadi audio bisa di-seek.
-- **Download rapi** — nama file `Channel - Title.mp3`.
-- **Cache otomatis** — video yang MP3-nya sudah ada langsung siap dipakai.
-- **Folder penyimpanan custom** — pilih folder sendiri lewat menu pengaturan; file lama bisa
-  ikut dipindah.
-- **Sidecar metadata** — setiap MP3 punya file `.json` berisi judul, channel, durasi, dan URL
-  sumber, sehingga nama lagu tetap terbaca tanpa membuka database.
-- **Koleksi** — riwayat tersimpan di PostgreSQL, bisa diputar, diunduh, atau dihapus.
+- **Search without an API key** — uses `yt-dlp "ytsearch5:<query>"`; you can also paste a
+  YouTube URL directly.
+- **Up to 5 results** — title, channel, duration, view count, and thumbnail.
+- **MP3 conversion** — highest VBR quality (`--audio-quality 0`) with embedded ID3 metadata.
+- **Two-worker queue** — at most two conversions run at once; the rest wait in the queue.
+- **Real-time progress** — `queued → downloading → converting → ready` (or `error`).
+- **Cancel a conversion** — stops the `yt-dlp`/`ffmpeg` process and removes partial files.
+- **Streaming preview** — supports HTTP Range requests, so you can seek through the audio.
+- **Clean downloads** — files are named `Channel - Title.mp3`.
+- **Automatic cache** — songs whose MP3 already exists are immediately ready.
+- **Custom download folder** — choose your own folder from the settings dialog; existing files
+  can be moved along with it.
+- **Sidecar metadata** — every MP3 gets a matching `.json` file containing the title, channel,
+  duration, and source URL, so song names stay readable without opening the database.
+- **Library** — history is stored in PostgreSQL and can be played, downloaded, or deleted.
 
 ---
 
 ## Stack
 
-| Bagian   | Teknologi                                                              |
-| -------- | ---------------------------------------------------------------------- |
+| Part     | Technology                                                              |
+| -------- | ----------------------------------------------------------------------- |
 | Frontend | React 19, Vite 8, Tailwind CSS 4, shadcn/ui, axios, lucide-react, sonner |
-| Backend  | Python 3.11+, Django 5.2                                               |
-| Database | PostgreSQL (driver `psycopg` 3)                                        |
-| Engine   | `yt-dlp` (binary otomatis di `bin/`) + `ffmpeg`                        |
-| Tooling  | `pnpm` untuk frontend, `pip` untuk backend                             |
+| Backend  | Python 3.11+, Django 5.2                                                |
+| Database | PostgreSQL (`psycopg` 3 driver)                                         |
+| Engine   | `yt-dlp` (auto-downloaded into `bin/`) + `ffmpeg`                       |
+| Tooling  | `pnpm` for the frontend, `pip` for the backend                          |
 
 ---
 
-## Struktur proyek
+## Project structure
 
 ```text
 ytmp3-scrapper/
@@ -48,34 +49,34 @@ ytmp3-scrapper/
 │  ├─ manage.py
 │  ├─ requirements.txt
 │  ├─ .env.example
-│  ├─ config/               # settings, URL, WSGI/ASGI
-│  └─ api/                  # views, jobs, storage, ytdlp, model, migrations
+│  ├─ config/               # settings, URLs, WSGI/ASGI
+│  └─ api/                  # views, jobs, storage, ytdlp, models, migrations
 ├─ frontend/
 │  ├─ package.json
-│  ├─ vite.config.js        # port 5233, proxy /api -> 8137
-│  └─ src/                  # App, komponen, lib/api.js
-├─ bin/                     # yt-dlp (diunduh otomatis, tidak di-commit)
-├─ downloads/               # MP3 + sidecar .json (tidak di-commit)
-├─ dev.ps1                  # jalankan backend + frontend (Windows)
+│  ├─ vite.config.js        # port 5233, /api proxy -> 8137
+│  └─ src/                  # App, components, lib/api.js
+├─ bin/                     # yt-dlp (auto-downloaded, not committed)
+├─ downloads/               # MP3 + sidecar .json (not committed)
+├─ dev.ps1                  # run backend + frontend (Windows)
 └─ README.md
 ```
 
 ---
 
-## Prasyarat
+## Requirements
 
-- **Python 3.11+** dan `pip`
-- **Node.js 20+** dan **pnpm**
-- **PostgreSQL** yang berjalan (default `127.0.0.1:5432`)
-- **ffmpeg** tersedia di `PATH`
+- **Python 3.11+** and `pip`
+- **Node.js 20+** and **pnpm**
+- **PostgreSQL** running (default `127.0.0.1:5432`)
+- **ffmpeg** available in `PATH`
   - Windows: `winget install Gyan.FFmpeg`
   - macOS: `brew install ffmpeg`
   - Linux: `sudo apt install ffmpeg`
 
-`yt-dlp` tidak perlu dipasang manual. Saat pertama kali dijalankan, aplikasi mengunduh binary
-yang sesuai ke folder `bin/`.
+You do not need to install `yt-dlp` manually. On first run, the app downloads the appropriate
+binary into the `bin/` folder.
 
-Cek cepat:
+Quick check:
 
 ```powershell
 py --version
@@ -86,24 +87,24 @@ ffmpeg -version
 
 ---
 
-## Instalasi
+## Installation
 
-### 1. Clone & masuk ke folder
+### 1. Clone the repository
 
 ```powershell
 git clone https://github.com/FitraRiadi/ytmp3-scrapper.git
 cd ytmp3-scrapper
 ```
 
-### 2. Siapkan database
+### 2. Create the database
 
-Buat database kosong (contoh memakai `psql`):
+Create an empty database (example using `psql`):
 
 ```powershell
 psql -U postgres -h 127.0.0.1 -c "CREATE DATABASE ytmp3_scrapper ENCODING 'UTF8'"
 ```
 
-Sesuaikan nama database/user kalau berbeda.
+Adjust the database name or user if needed.
 
 ### 3. Backend
 
@@ -112,7 +113,7 @@ cd backend
 copy .env.example .env
 ```
 
-Buka `backend/.env`, lalu isi `DB_PASSWORD` (dan variabel lain bila perlu). Setelah itu:
+Open `backend/.env` and fill in `DB_PASSWORD` (and any other values as needed). Then:
 
 ```powershell
 py -m pip install -r requirements.txt
@@ -120,7 +121,7 @@ py manage.py migrate
 py manage.py runserver 127.0.0.1:8137
 ```
 
-Cek: <http://127.0.0.1:8137/api/health>
+Check: <http://127.0.0.1:8137/api/health>
 
 ```json
 {
@@ -128,7 +129,7 @@ Cek: <http://127.0.0.1:8137/api/health>
   "ytdlp": "2026.10.26",
   "ffmpeg": true,
   "database": true,
-  "downloadDir": "D:\\path\\ke\\ytmp3-scrapper\\downloads",
+  "downloadDir": "D:\\path\\to\\ytmp3-scrapper\\downloads",
   "active": 0,
   "queued": 0
 }
@@ -136,7 +137,7 @@ Cek: <http://127.0.0.1:8137/api/health>
 
 ### 4. Frontend (development)
 
-Buka terminal lain:
+In another terminal:
 
 ```powershell
 cd frontend
@@ -144,24 +145,24 @@ pnpm install
 pnpm dev
 ```
 
-Buka <http://localhost:5233>. Vite mem-proxy `/api` ke Django di `8137`, jadi tidak ada
-masalah CORS.
+Open <http://localhost:5233>. Vite proxies `/api` to Django on `8137`, so there are no CORS
+issues.
 
-### 5. Build produksi
+### 5. Production build
 
 ```powershell
 cd frontend
 pnpm build
 ```
 
-Hasil build ada di `frontend/dist`. Setelah itu Django bisa menyajikan aplikasi sekaligus:
+The build output goes to `frontend/dist`. Django can then serve the app and the API together:
 
 ```powershell
 cd backend
 py manage.py runserver 127.0.0.1:8137
 ```
 
-Buka <http://127.0.0.1:8137>.
+Open <http://127.0.0.1:8137>.
 
 ### Shortcut (Windows)
 
@@ -169,95 +170,95 @@ Buka <http://127.0.0.1:8137>.
 .\dev.ps1
 ```
 
-Script ini membuka dua jendela: Django `8137` dan Vite `5233`.
+This opens two windows: Django on `8137` and Vite on `5233`.
 
 ---
 
-## Cara pakai
+## Usage
 
-1. Tulis judul lagu atau tempel URL YouTube, lalu tekan **Cari**.
-2. Pilih salah satu dari maksimal 5 hasil.
-3. Klik **Convert** dan tunggu sampai status **Siap**.
-4. Klik **Preview** untuk memutar (bisa di-seek), atau **Download** untuk menyimpan MP3.
-5. Lagu yang selesai otomatis masuk ke **Koleksi kamu**.
-6. Klik ikon **gear** di header untuk mengganti folder penyimpanan.
+1. Enter a song title or paste a YouTube URL, then press **Search**.
+2. Pick one of the up to 5 results.
+3. Click **Convert** and wait for the status to become **Ready**.
+4. Click **Preview** to play it (seeking is supported) or **Download** to save the MP3.
+5. Finished songs automatically appear in your **Library**.
+6. Click the **gear** icon in the header to change the download folder.
 
-Folder penyimpanan:
+Download folder behavior:
 
-- Path harus absolut, mis. `D:\Music\ytmp3`.
-- Folder dibuat otomatis kalau belum ada.
-- Opsi **Pindahkan MP3 lama** memindahkan file yang sudah ada ke folder baru.
-- Tombol **Default** mengembalikan ke folder `downloads/` di dalam proyek.
-- Konversi yang sedang berjalan tetap diselesaikan di folder lamanya.
+- The path must be absolute, e.g. `D:\Music\ytmp3`.
+- The folder is created automatically if it does not exist.
+- **Move existing MP3s** moves already-downloaded files into the new folder.
+- The **Default** button switches back to the in-project `downloads/` folder.
+- Conversions already in progress finish in their original folder.
 
 ---
 
-## Konfigurasi
+## Configuration
 
-### Environment backend
+### Backend environment
 
-Dibaca dari `backend/.env` (atau `.env` di root proyek). Variabel environment yang sudah ada
-akan menang.
+Values are read from `backend/.env` (or `.env` in the project root). Existing environment
+variables take precedence.
 
-| Variabel            | Default                        | Keterangan                          |
+| Variable            | Default                        | Description                         |
 | ------------------- | ------------------------------ | ----------------------------------- |
-| `DJANGO_DEBUG`      | `1`                            | `0` untuk produksi                  |
-| `DJANGO_SECRET_KEY` | `dev-only-...`                 | ganti dengan string acak            |
-| `DB_NAME`           | `ytmp3_scrapper`               | nama database                       |
-| `DB_USER`           | `postgres`                     | user database                       |
-| `DB_PASSWORD`       | *(kosong)*                     | password database                   |
-| `DB_HOST`           | `127.0.0.1`                    | host database                       |
-| `DB_PORT`           | `5432`                         | port database                       |
-| `DOWNLOAD_DIR`      | `<root>/downloads`             | folder simpan default               |
+| `DJANGO_DEBUG`      | `1`                            | Set to `0` for production           |
+| `DJANGO_SECRET_KEY` | `dev-only-...`                 | Replace with a random string        |
+| `DB_NAME`           | `ytmp3_scrapper`               | Database name                       |
+| `DB_USER`           | `postgres`                     | Database user                       |
+| `DB_PASSWORD`       | *(empty)*                      | Database password                   |
+| `DB_HOST`           | `127.0.0.1`                    | Database host                       |
+| `DB_PORT`           | `5432`                         | Database port                       |
+| `DOWNLOAD_DIR`      | `<root>/downloads`             | Default download folder             |
 
-### Konstanta aplikasi
+### Application constants
 
-Ada di `backend/config/settings.py`:
+Defined in `backend/config/settings.py`:
 
-| Konstanta             | Default                     | Fungsi                              |
-| --------------------- | --------------------------- | ----------------------------------- |
-| `MAX_RESULTS`         | `5`                         | batas hasil pencarian               |
-| `MAX_CONCURRENT_JOBS` | `2`                         | konversi paralel                    |
-| `BIN_DIR`             | `<root>/bin`                | lokasi binary `yt-dlp`              |
-| `FRONTEND_DIST`       | `<root>/frontend/dist`      | hasil build yang disajikan Django   |
-| `PREFERENCES_FILE`    | `<root>/data/preferences.json` | preferensi folder simpan         |
+| Constant              | Default                        | Purpose                             |
+| --------------------- | ------------------------------ | ----------------------------------- |
+| `MAX_RESULTS`         | `5`                            | Search result limit                 |
+| `MAX_CONCURRENT_JOBS` | `2`                            | Parallel conversions                |
+| `BIN_DIR`             | `<root>/bin`                   | Location of the `yt-dlp` binary     |
+| `FRONTEND_DIST`       | `<root>/frontend/dist`         | Build output served by Django       |
+| `PREFERENCES_FILE`    | `<root>/data/preferences.json` | Custom download folder preferences  |
 
-### Port
+### Ports
 
-| Service    | Port | Diatur di                              |
+| Service    | Port | Configured in                          |
 | ---------- | ---- | -------------------------------------- |
-| Django API | 8137 | perintah `runserver` / `dev.ps1`       |
+| Django API | 8137 | `runserver` command / `dev.ps1`        |
 | Vite dev   | 5233 | `frontend/vite.config.js`              |
 
-Kalau port diubah, sesuaikan juga target proxy `/api` di `vite.config.js`.
+If you change a port, update the `/api` proxy target in `vite.config.js` as well.
 
 ---
 
 ## API
 
-Base URL development: `http://127.0.0.1:8137/api` (atau lewat Vite `http://localhost:5233/api`).
+Development base URL: `http://127.0.0.1:8137/api` (or via Vite at `http://localhost:5233/api`).
 
-- Format: JSON, kecuali endpoint media (`audio/mpeg`) dan halaman SPA.
-- Error: `{ "error": "pesan" }`.
-- Tidak ada autentikasi dan CSRF dimatikan. Jalankan hanya di lingkungan tepercaya.
+- Format: JSON, except for media endpoints (`audio/mpeg`) and SPA pages.
+- Errors: `{ "error": "message" }`.
+- There is no authentication and CSRF is disabled. Run this only in a trusted environment.
 
-| Method    | Endpoint                | Fungsi                                |
-| --------- | ----------------------- | ------------------------------------- |
-| GET       | `/api/health`           | status engine, database, folder aktif |
-| POST      | `/api/search`           | cari video (maks 5)                   |
-| POST      | `/api/convert`          | mulai konversi MP3                    |
-| GET       | `/api/jobs`             | semua job di memori                   |
-| GET       | `/api/job/<id>`         | status satu job                       |
-| DELETE    | `/api/job/<id>`         | batalkan job                          |
-| GET       | `/api/library`          | koleksi dari database                 |
-| DELETE    | `/api/library/<id>`     | hapus lagu + MP3 + sidecar            |
-| GET/HEAD  | `/api/media/<id>`       | stream MP3 (Range) / download         |
-| POST      | `/api/open-folder`      | buka Explorer (Windows)               |
-| GET       | `/api/settings`         | info folder penyimpanan               |
-| POST      | `/api/settings`         | ubah folder / reset                   |
-| DELETE    | `/api/settings`         | reset ke folder default               |
-| POST      | `/api/settings/browse`  | dialog pilih folder (Windows)         |
-| GET       | `/*` (selain `/api/`)   | aplikasi React / aset build           |
+| Method    | Endpoint                | Description                            |
+| --------- | ----------------------- | -------------------------------------- |
+| GET       | `/api/health`           | Engine, database, and folder status    |
+| POST      | `/api/search`           | Search videos (max 5)                  |
+| POST      | `/api/convert`          | Start an MP3 conversion                |
+| GET       | `/api/jobs`             | All in-memory jobs                     |
+| GET       | `/api/job/<id>`         | Status of a single job                 |
+| DELETE    | `/api/job/<id>`         | Cancel a job                           |
+| GET       | `/api/library`          | Collection from the database           |
+| DELETE    | `/api/library/<id>`     | Delete song + MP3 + sidecar            |
+| GET/HEAD  | `/api/media/<id>`       | Stream MP3 (Range) / download          |
+| POST      | `/api/open-folder`      | Open Explorer (Windows)                |
+| GET       | `/api/settings`         | Download folder info                   |
+| POST      | `/api/settings`         | Change folder / reset                  |
+| DELETE    | `/api/settings`         | Reset to the default folder            |
+| POST      | `/api/settings/browse`  | Native folder picker (Windows)         |
+| GET       | `/*` (outside `/api/`)  | React app / build assets               |
 
 ### `POST /api/search`
 
@@ -291,7 +292,7 @@ Response:
 }
 ```
 
-Field `size`, `sizeLabel`, dan `fileName` hanya muncul kalau `cached: true`.
+The `size`, `sizeLabel`, and `fileName` fields only appear when `cached` is `true`.
 
 ### `POST /api/convert`
 
@@ -305,10 +306,10 @@ Field `size`, `sizeLabel`, dan `fileName` hanya muncul kalau `cached: true`.
 }
 ```
 
-Job idempoten per video ID. Kalau file sudah ada, response langsung `ready` dengan
-`cached: true`. Kalau belum, job masuk antrian.
+Jobs are idempotent per video ID. If the file already exists, the response is immediately
+`ready` with `cached: true`. Otherwise, the job is queued.
 
-Contoh job object:
+Example job object:
 
 ```json
 {
@@ -319,7 +320,7 @@ Contoh job object:
   "thumbnail": "https://i.ytimg.com/vi/9jz3fWYwMuc/mqdefault.jpg",
   "status": "downloading",
   "progress": 42,
-  "message": "Mengunduh audio... 49.4%",
+  "message": "Downloading audio... 49.4%",
   "size": 0,
   "sizeLabel": null,
   "fileName": "NIKI - lowkey.mp3",
@@ -330,8 +331,8 @@ Contoh job object:
 }
 ```
 
-Status: `queued`, `downloading`, `converting`, `ready`, `error`.
-Saat `ready`, `mediaUrl` dan `downloadUrl` terisi.
+Statuses: `queued`, `downloading`, `converting`, `ready`, `error`.
+When `ready`, `mediaUrl` and `downloadUrl` are populated.
 
 ### `GET /api/library`
 
@@ -357,44 +358,44 @@ Saat `ready`, `mediaUrl` dan `downloadUrl` terisi.
 }
 ```
 
-Hanya lagu yang filenya masih ada di folder aktif yang ditampilkan.
+Only songs whose files still exist in the active folder are listed.
 
 ### Streaming & download
 
 ```text
-GET /api/media/<id>              -> diputar di browser
+GET /api/media/<id>              -> play in the browser
 GET /api/media/<id>?download=1   -> Content-Disposition: attachment
 ```
 
-Mendukung `Range` (response `206`) supaya bisa di-seek. `HEAD` juga didukung.
+Supports `Range` requests (`206` responses) for seeking. `HEAD` is supported as well.
 
-### Pengaturan folder
+### Folder settings
 
 ```text
 GET    /api/settings
 POST   /api/settings              { "downloadDir": "D:\\Music\\ytmp3", "moveFiles": true }
 POST   /api/settings              { "reset": true }
 DELETE /api/settings
-POST   /api/settings/browse       membuka dialog folder native (Windows)
+POST   /api/settings/browse       opens a native folder picker (Windows)
 ```
 
-Response berisi `downloadDir`, `defaultDir`, `isDefault`, `exists`, `writable`, `files`, dan
-saat mengganti folder juga `moved`, `skipped`, `moveErrors`.
+The response includes `downloadDir`, `defaultDir`, `isDefault`, `exists`, `writable`, and
+`files`. When changing folders it also returns `moved`, `skipped`, and `moveErrors`.
 
-### Buka folder
+### Open folder
 
 ```text
-POST /api/open-folder  { "id": "9jz3fWYwMuc" }  -> pilih file di Explorer
-POST /api/open-folder  {}                        -> buka folder simpan aktif
+POST /api/open-folder  { "id": "9jz3fWYwMuc" }  -> select the file in Explorer
+POST /api/open-folder  {}                        -> open the active download folder
 ```
 
-Khusus Windows; di OS lain response `{ "ok": false, "message": "..." }`.
+Windows only; on other platforms the response is `{ "ok": false, "message": "..." }`.
 
 ---
 
-## Penyimpanan file
+## File storage
 
-MP3 disimpan dengan nama video ID agar unik dan mudah dicek:
+MP3 files are stored under their video ID, which keeps names unique and easy to check:
 
 ```text
 downloads/
@@ -404,10 +405,10 @@ downloads/
 └─ OqBuXQLR4Y8.json
 ```
 
-Nama file yang diunduh user tetap rapi (`Channel - Title.mp3`) lewat header
-`Content-Disposition`. Metadata juga tertanam di MP3 (ID3).
+The filename users receive is still clean (`Channel - Title.mp3`) thanks to the
+`Content-Disposition` header. Metadata is also embedded in the MP3 (ID3 tags).
 
-Contoh sidecar:
+Sidecar example:
 
 ```json
 {
@@ -425,75 +426,75 @@ Contoh sidecar:
 }
 ```
 
-Kalau sidecar hilang (misalnya file lama), buat ulang dengan:
+If a sidecar is missing (for example, for older files), regenerate them with:
 
 ```powershell
 cd backend
 py manage.py sync_sidecars
 ```
 
-Database menyimpan tabel `api_track`:
+The database stores an `api_track` table:
 
-| Kolom        | Isi                                |
-| ------------ | ---------------------------------- |
-| `video_id`   | ID YouTube (unik)                  |
-| `title`      | judul lagu                         |
-| `channel`    | channel/artis                      |
-| `duration`   | durasi detik                       |
-| `thumbnail`  | URL thumbnail                      |
-| `file_name`  | nama file untuk download           |
-| `file_size`  | ukuran byte                        |
-| `created_at` | waktu dibuat                       |
-| `updated_at` | waktu terakhir diubah              |
+| Column       | Content                          |
+| ------------ | -------------------------------- |
+| `video_id`   | YouTube ID (unique)              |
+| `title`      | Song title                       |
+| `channel`    | Channel/artist                   |
+| `duration`   | Duration in seconds              |
+| `thumbnail`  | Thumbnail URL                    |
+| `file_name`  | Download filename                |
+| `file_size`  | Size in bytes                    |
+| `created_at` | Creation timestamp               |
+| `updated_at` | Last update timestamp            |
 
-Tidak ada path absolut di database; file selalu dicari di folder aktif.
+No absolute paths are stored in the database; files are always looked up in the active folder.
 
 ---
 
-## Cara kerja singkat
+## How it works
 
-**Pencarian**
+**Search**
 
 ```text
 yt-dlp "ytsearch5:<query>" --flat-playlist --dump-json --no-warnings --ignore-errors
 ```
 
-**Konversi**
+**Conversion**
 
 ```text
 yt-dlp -f bestaudio/best -x --audio-format mp3 --audio-quality 0 --embed-metadata
        --no-playlist --newline -o <folder>/<id>.%(ext)s https://www.youtube.com/watch?v=<id>
 ```
 
-- Konversi berjalan di thread pool di dalam proses Django (maksimal 2 worker).
-- Progress download dipetakan ke 0–85, tahap convert 88, selesai 100.
-- Job disimpan di memori; hasil akhirnya ditulis ke PostgreSQL dan sidecar `.json`.
-- Frontend melakukan polling `GET /api/job/<id>` selama ada job aktif.
+- Conversions run in a thread pool inside the Django process (up to two workers).
+- Download progress maps to 0–85, the conversion stage to 88, and completion to 100.
+- Jobs live in memory; final results are written to PostgreSQL and a `.json` sidecar.
+- The frontend polls `GET /api/job/<id>` while any job is active.
 
 ---
 
 ## Troubleshooting
 
-| Masalah                              | Solusi                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| `ffmpeg` tidak terdeteksi            | Install ffmpeg dan pastikan ada di `PATH`, lalu restart backend.          |
-| Pencarian gagal / bot check          | Update yt-dlp (`py manage.py update_ytdlp`), coba lagi beberapa saat.     |
-| Konversi error "Sign in to confirm"  | Video butuh login/usia, atau IP diblokir YouTube.                         |
-| `database mati` di header            | Cek PostgreSQL, nama database, dan isi `.env`.                            |
-| Frontend kosong di port 8137         | Jalankan `pnpm build` di folder `frontend`.                               |
-| Port sudah dipakai                   | Hentikan proses lain atau ubah port Django + proxy Vite.                  |
-| Preview tidak bisa di-seek           | Pastikan endpoint media mengembalikan `206` dan `Accept-Ranges: bytes`.   |
-| Folder tidak bisa ditulis            | Gunakan path absolut yang bisa diakses user, atau pilih folder lain.      |
-| Dialog pilih folder tidak muncul     | Hanya Windows + desktop interaktif; isi path manual sebagai alternatif.   |
-| Nama lagu tidak terlihat di folder    | Baca sidecar `<videoId>.json` atau tag ID3 di MP3.                        |
+| Problem                             | Solution                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `ffmpeg` not detected               | Install ffmpeg, make sure it is on `PATH`, then restart the backend.         |
+| Search fails / bot check            | Update yt-dlp (`py manage.py update_ytdlp`) and try again later.             |
+| Conversion error "Sign in to confirm" | The video requires login/age verification, or YouTube blocked the IP.      |
+| `database down` in the header       | Check PostgreSQL, the database name, and your `.env` file.                  |
+| Blank frontend on port 8137         | Run `pnpm build` in the `frontend` folder.                                  |
+| Port already in use                 | Stop the other process or change the Django port and Vite proxy.            |
+| Preview cannot seek                 | Make sure the media endpoint returns `206` and `Accept-Ranges: bytes`.      |
+| Folder is not writable              | Use an absolute path the user can access, or choose another folder.         |
+| Folder picker does not appear       | Windows and an interactive desktop are required; enter the path manually.  |
+| Song names are not visible in the folder | Read the `<videoId>.json` sidecar or the MP3 ID3 tags.                  |
 
-Cek backend:
+Check the backend:
 
 ```powershell
 curl.exe http://127.0.0.1:8137/api/health
 ```
 
-Update engine:
+Update the engine:
 
 ```powershell
 cd backend
@@ -502,21 +503,21 @@ py manage.py update_ytdlp
 
 ---
 
-## Batasan & keamanan
+## Limitations & security
 
-- **Tanpa autentikasi** — aplikasi ini dirancang untuk lokal. Jangan langsung diekspos ke
-  internet tanpa proteksi tambahan.
-- **Job in-memory** — progress hilang saat backend restart; file dan koleksi tetap aman.
-- **Bukan untuk multi-instance/serverless** — worker berjalan di proses Django.
-- **Tidak ada rate limit** — hindari pemanggilan berlebihan.
-- **Fitur Windows** — buka folder dan dialog pilih folder memakai Explorer/tkinter.
-- **Hanya audio** — tanpa video dan tanpa playlist.
-- **File tidak dihapus otomatis** — kelola lewat tombol hapus di koleksi.
-- **Hak cipta** — gunakan hanya untuk konten yang kamu berhak; hormati ToS YouTube.
+- **No authentication** — this app is designed for local use. Do not expose it directly to the
+  internet without additional protection.
+- **In-memory jobs** — progress is lost when the backend restarts; files and the library remain.
+- **Not built for multi-instance/serverless** — workers run inside the Django process.
+- **No rate limiting** — avoid excessive requests.
+- **Windows-specific features** — opening folders and the folder picker rely on Explorer/tkinter.
+- **Audio only** — no video and no playlists.
+- **Files are not deleted automatically** — manage them with the delete button in the library.
+- **Copyright** — only use content you have the right to download; respect YouTube's ToS.
 
 ---
 
-## Kontribusi
+## Contributing
 
-Pull request dan issue dipersilakan. Untuk perubahan besar, buka issue terlebih dahulu agar
-bisa didiskusikan.
+Pull requests and issues are welcome. For larger changes, please open an issue first so the
+approach can be discussed.
